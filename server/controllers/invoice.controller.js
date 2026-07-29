@@ -6,7 +6,11 @@ const getInvoices = async (req, res, next) => {
     const invoices = await Invoice.find()
       .populate('project', 'title')
       .populate('client', 'name company');
-    res.json({ success: true, data: invoices });
+
+    res.json({
+      success: true,
+      data: invoices,
+    });
   } catch (error) {
     next(error);
   }
@@ -18,8 +22,13 @@ const createInvoice = async (req, res, next) => {
       ...req.body,
       createdBy: req.user._id,
     });
+
     const createdInvoice = await invoice.save();
-    res.status(201).json({ success: true, data: createdInvoice });
+
+    res.status(201).json({
+      success: true,
+      data: createdInvoice,
+    });
   } catch (error) {
     next(error);
   }
@@ -28,22 +37,33 @@ const createInvoice = async (req, res, next) => {
 const updateInvoice = async (req, res, next) => {
   try {
     const invoice = await Invoice.findById(req.params.id);
+
     if (!invoice) {
-      res.status(404);
-      throw new Error('Invoice not found');
+      return res.status(404).json({
+        success: false,
+        message: 'Invoice not found.',
+      });
     }
-    const updatedInvoice = await Invoice.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    
+
+    const updatedInvoice = await Invoice.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    // Create notification when invoice is marked as paid
     if (req.body.status === 'paid' && invoice.status !== 'paid') {
-      const notification = await Notification.create({
+      await Notification.create({
         user: req.user._id,
-        message: `Invoice marked as paid`,
+        message: 'Invoice marked as paid.',
         type: 'invoice',
       });
-      req.io.emit('notification', notification);
     }
-    
-    res.json({ success: true, data: updatedInvoice });
+
+    res.json({
+      success: true,
+      data: updatedInvoice,
+    });
   } catch (error) {
     next(error);
   }
@@ -52,15 +72,28 @@ const updateInvoice = async (req, res, next) => {
 const deleteInvoice = async (req, res, next) => {
   try {
     const invoice = await Invoice.findById(req.params.id);
+
     if (!invoice) {
-      res.status(404);
-      throw new Error('Invoice not found');
+      return res.status(404).json({
+        success: false,
+        message: 'Invoice not found.',
+      });
     }
+
     await invoice.deleteOne();
-    res.json({ success: true, message: 'Invoice removed' });
+
+    res.json({
+      success: true,
+      message: 'Invoice removed successfully.',
+    });
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { getInvoices, createInvoice, updateInvoice, deleteInvoice };
+module.exports = {
+  getInvoices,
+  createInvoice,
+  updateInvoice,
+  deleteInvoice,
+};
