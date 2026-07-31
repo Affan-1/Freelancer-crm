@@ -31,6 +31,8 @@ const inviteMember = async (req, res, next) => {
   try {
     const { name, email, role } = req.body;
 
+    console.log("Invitation Request:", req.body);
+
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {

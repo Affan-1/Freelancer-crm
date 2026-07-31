@@ -48,11 +48,16 @@ const sendInvitationEmail = async ({
     `,
   };
 
-  const info = await transporter.sendMail(mailOptions);
+const info = await transporter.sendMail(mailOptions);
 
-  console.log("Email sent:", info.messageId);
+console.log("=================================");
+console.log("Sent To:", to);
+console.log("Accepted:", info.accepted);
+console.log("Rejected:", info.rejected);
+console.log("Response:", info.response);
+console.log("=================================");
 
-  return info;
+return info;
 };
 
 module.exports = { sendInvitationEmail };
