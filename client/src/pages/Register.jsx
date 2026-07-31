@@ -5,10 +5,16 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import api from '../lib/axios';
-import useAuthStore from '../store/authStore';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/ui/Card';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '../components/ui/Card';
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -18,26 +24,38 @@ const registerSchema = z.object({
 
 const Register = () => {
   const navigate = useNavigate();
-  const setAuth = useAuthStore(state => state.setAuth);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(registerSchema),
   });
 
   const registerMutation = useMutation({
-    mutationFn: (data) => api.post('/auth/register', data).then(res => res.data),
+    mutationFn: (data) => api.post('/auth/register', data).then((res) => res.data),
+
     onSuccess: (data) => {
-      setAuth(data.data, data.data.token);
-      navigate('/dashboard');
+      setError('');
+      setSuccess(data.message || 'Registration successful! Please login.');
+
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
     },
+
     onError: (err) => {
+      setSuccess('');
       setError(err.response?.data?.message || 'Registration failed');
-    }
+    },
   });
 
   const onSubmit = (data) => {
     setError('');
+    setSuccess('');
     registerMutation.mutate(data);
   };
 
@@ -45,39 +63,94 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 items-center">
-          <CardTitle className="text-3xl font-bold text-primary">FreeCRM</CardTitle>
+          <CardTitle className="text-3xl font-bold text-primary">
+            FreeCRM
+          </CardTitle>
           <CardDescription>Create a new account</CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {error && <div className="p-3 bg-destructive/15 text-destructive text-sm rounded-md">{error}</div>}
-            
+
+            {error && (
+              <div className="p-3 bg-destructive/15 text-destructive text-sm rounded-md">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="p-3 bg-green-100 text-green-700 text-sm rounded-md">
+                {success}
+              </div>
+            )}
+
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="name">Name</label>
-              <Input id="name" placeholder="John Doe" {...register('name')} />
-              {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+              <label className="text-sm font-medium" htmlFor="name">
+                Name
+              </label>
+              <Input
+                id="name"
+                placeholder="John Doe"
+                {...register('name')}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive">
+                  {errors.name.message}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="email">Email</label>
-              <Input id="email" type="email" placeholder="m@example.com" {...register('email')} />
-              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              <label className="text-sm font-medium" htmlFor="email">
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                {...register('email')}
+              />
+              {errors.email && (
+                <p className="text-sm text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
-            
+
             <div className="space-y-2">
-              <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
-              <Input id="password" type="password" {...register('password')} />
-              {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
+              <label className="text-sm font-medium" htmlFor="password">
+                Password
+              </label>
+              <Input
+                id="password"
+                type="password"
+                {...register('password')}
+              />
+              {errors.password && (
+                <p className="text-sm text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
-            
-            <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-              {registerMutation.isPending ? 'Registering...' : 'Register'}
+
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={registerMutation.isPending}
+            >
+              {registerMutation.isPending
+                ? 'Registering...'
+                : 'Register'}
             </Button>
           </form>
         </CardContent>
+
         <CardFooter className="flex flex-col items-center">
           <p className="mt-2 text-xs text-center text-muted-foreground">
-             Already have an account? <Link to="/login" className="text-primary hover:underline">Login</Link>
+            Already have an account?{' '}
+            <Link to="/login" className="text-primary hover:underline">
+              Login
+            </Link>
           </p>
         </CardFooter>
       </Card>
