@@ -8,8 +8,10 @@ const registerUser = async (req, res, next) => {
     const userExists = await User.findOne({ email });
 
     if (userExists) {
-      res.status(400);
-      throw new Error('User already exists');
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists',
+      });
     }
 
     const user = await User.create({
@@ -20,19 +22,15 @@ const registerUser = async (req, res, next) => {
     });
 
     if (user) {
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
-        data: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          token: generateToken(user._id),
-        }
+        message: 'Registration successful. Please login.',
       });
     } else {
-      res.status(400);
-      throw new Error('Invalid user data');
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user data',
+      });
     }
   } catch (error) {
     next(error);
@@ -46,7 +44,7 @@ const loginUser = async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
-      res.json({
+      return res.json({
         success: true,
         data: {
           _id: user._id,
@@ -54,15 +52,20 @@ const loginUser = async (req, res, next) => {
           email: user.email,
           role: user.role,
           token: generateToken(user._id),
-        }
+        },
       });
     } else {
-      res.status(401);
-      throw new Error('Invalid email or password');
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password',
+      });
     }
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { registerUser, loginUser };
+module.exports = {
+  registerUser,
+  loginUser,
+};
