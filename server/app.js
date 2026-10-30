@@ -24,6 +24,9 @@ connectDB();
 
 const app = express();
 
+// Required on Render so the rate limiter sees each user's real IP
+app.set("trust proxy", 1);
+
 // Middleware
 app.use(helmet());
 
@@ -39,7 +42,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
 });
 
 app.use("/api", limiter);
