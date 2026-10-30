@@ -8,6 +8,7 @@ import Dashboard from '../pages/Dashboard';
 import Clients from '../pages/Clients';
 import Projects from '../pages/Projects';
 import Invoices from '../pages/Invoices';
+import Home from "../pages/Home";
 
 import Calendar from '../pages/Calendar';
 import Team from '../pages/Team';
@@ -18,6 +19,7 @@ const NotFound = () => <div className="p-8 text-center"><h1 className="text-4xl 
 const AppRoutes = () => {
   return (
     <Routes>
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/invitation" element={<InvitationResponse />} />
